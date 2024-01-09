@@ -229,6 +229,8 @@ public:
 
     static geometry_msgs::Point Point3DToGeoMsgPoint(const Point3D& point);
 
+    static geometry_msgs::Pose Point3DToGeoMsgPose(const Point3D& point, const Point3D& heading);
+
     static int Mod(const int& a, const int& b);
 
     static bool IsSamePoint3D(const Point3D& p1, const Point3D& p2);

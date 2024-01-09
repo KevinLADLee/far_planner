@@ -20,7 +20,8 @@ void FARMaster::Init() {
   terrain_local_sub_  = nh.subscribe("/terrain_local_cloud", 1, &FARMaster::TerrainLocalCallBack, this);
   joy_command_sub_    = nh.subscribe("/joy", 5, &FARMaster::JoyCommandCallBack, this);
   update_command_sub_ = nh.subscribe("/update_visibility_graph", 5, &FARMaster::UpdateCommandCallBack, this);
-  goal_pub_           = nh.advertise<geometry_msgs::PointStamped>("/way_point",5);
+//  goal_pub_           = nh.advertise<geometry_msgs::PointStamped>("/way_point",5);
+  goal_pub_           = nh.advertise<geometry_msgs::PoseStamped>("move_base_simple/goal",5);
   boundary_pub_       = nh.advertise<geometry_msgs::PolygonStamped>("/navigation_boundary",5);
   // Timers
   runtime_pub_        = nh.advertise<std_msgs::Float32>("/runtime",1);
@@ -125,7 +126,8 @@ void FARMaster::ResetEnvironmentAndGraph() {
   FARUtil::cur_dyobs_cloud_->clear();
   /* Stop the robot if it is moving */
   goal_waypoint_stamped_.header.stamp = ros::Time::now();
-  goal_waypoint_stamped_.point = FARUtil::Point3DToGeoMsgPoint(robot_pos_);
+  goal_waypoint_stamped_.pose = FARUtil::Point3DToGeoMsgPose(robot_pos_, robot_heading_);
+//  goal_waypoint_stamped_.point = FARUtil::Point3DToGeoMsgPoint(robot_pos_);
   goal_pub_.publish(goal_waypoint_stamped_);
   NodePtrStack empty_path;
   planner_viz_.VizPath(empty_path);
@@ -280,7 +282,8 @@ void FARMaster::PlanningCallBack(const ros::TimerEvent& event) {
       } else if (master_params_.is_viewpoint_extend) {
         planner_viz_.VizViewpointExtend(goal_ptr, goal_ptr->position);
       }
-      goal_waypoint_stamped_.point = FARUtil::Point3DToGeoMsgPoint(waypoint);
+//      goal_waypoint_stamped_.point = FARUtil::Point3DToGeoMsgPoint(waypoint);
+      goal_waypoint_stamped_.pose = FARUtil::Point3DToGeoMsgPose(waypoint, robot_heading_);
       goal_pub_.publish(goal_waypoint_stamped_);
       is_planner_running_ = true;
       planner_viz_.VizPoint3D(waypoint, "waypoint", VizColor::MAGNA, 1.5);
@@ -293,7 +296,8 @@ void FARMaster::PlanningCallBack(const ros::TimerEvent& event) {
       is_planner_running_ = false;
       nav_heading_ = Point3D(0,0,0);
       if (is_planning_fails) { // stops the robot
-        goal_waypoint_stamped_.point = FARUtil::Point3DToGeoMsgPoint(robot_pos_);
+//        goal_waypoint_stamped_.point = FARUtil::Point3DToGeoMsgPoint(robot_pos_);
+        goal_waypoint_stamped_.pose = FARUtil::Point3DToGeoMsgPose(robot_pos_, robot_heading_);
         goal_pub_.publish(goal_waypoint_stamped_);
       }
     }

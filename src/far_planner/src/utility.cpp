@@ -64,7 +64,7 @@ void FARUtil::ExtractNewObsPointCloud(const PointCloudPtr& cloudIn,
   for (const auto& p : temp_new_cloud->points) {
     if (p.intensity < FARUtil::kNewPIThred) {
       cloudNew->points.push_back(p);
-    } 
+    }
   }
 }
 
@@ -84,9 +84,9 @@ void FARUtil::ResetCloudIntensityWithTime(const PointCloudPtr& cloudInOut) {
 
 
 void FARUtil::CropPCLCloud(const PointCloudPtr& cloudIn,
-                          const PointCloudPtr& cloudCropped,
-                          const Point3D& centriod,
-                          const float& range) 
+                           const PointCloudPtr& cloudCropped,
+                           const Point3D& centriod,
+                           const float& range)
 {
   const std::size_t cloud_size = cloudIn->size();
   std::size_t idx = 0;
@@ -101,8 +101,8 @@ void FARUtil::CropPCLCloud(const PointCloudPtr& cloudIn,
 }
 
 void FARUtil::CropPCLCloud(const PointCloudPtr& cloudInOut,
-                          const Point3D& centriod,
-                          const float& range) 
+                           const Point3D& centriod,
+                           const float& range)
 {
   PointCloudPtr temp_crop_ptr(new pcl::PointCloud<PCLPoint>());
   FARUtil::CropPCLCloud(cloudInOut, temp_crop_ptr, centriod, range);
@@ -123,9 +123,9 @@ void FARUtil::CropCloudWithinHeight(const PointCloudPtr& cloudInOut, const float
 }
 
 void FARUtil::TransformPCLFrame(const std::string& from_frame_id,
-                               const std::string& to_frame_id,
-                               const tf::TransformListener* tf_listener,
-                               const PointCloudPtr& cloudInOut) 
+                                const std::string& to_frame_id,
+                                const tf::TransformListener* tf_listener,
+                                const PointCloudPtr& cloudInOut)
 {
   if (cloudInOut->empty()) return;
   pcl::PointCloud<PCLPoint> aft_tf_cloud;
@@ -142,9 +142,9 @@ void FARUtil::TransformPCLFrame(const std::string& from_frame_id,
 }
 
 void FARUtil::TransformPoint3DFrame(const std::string& from_frame_id,
-                                   const std::string& to_frame_id,
-                                   const tf::TransformListener* tf_listener,
-                                   Point3D& point)
+                                    const std::string& to_frame_id,
+                                    const tf::TransformListener* tf_listener,
+                                    Point3D& point)
 {
   tf::Vector3 point_vec(point.x, point.y, point.z);
   tf::StampedTransform transform_tf_stamp;
@@ -169,8 +169,8 @@ bool FARUtil::IsSameFrameID(const std::string& cur_frame, const std::string& ref
   return str1 == str2;
 }
 
-void FARUtil::ConvertCloudToPCL(const PointStack& point_stack, 
-                               const PointCloudPtr& point_cloud_ptr) 
+void FARUtil::ConvertCloudToPCL(const PointStack& point_stack,
+                                const PointCloudPtr& point_cloud_ptr)
 {
   point_cloud_ptr->clear();
   point_cloud_ptr->points.resize(point_stack.size());
@@ -198,9 +198,25 @@ geometry_msgs::Point FARUtil::Point3DToGeoMsgPoint(const Point3D& point) {
   return p;
 }
 
+geometry_msgs::Pose FARUtil::Point3DToGeoMsgPose(const Point3D& point, const Point3D& heading) {
+  geometry_msgs::Pose p;
+  p.position.x = point.x;
+  p.position.y = point.y;
+  p.position.z = point.z;
+
+  auto yaw = atan2(heading.y, heading.x);
+  auto q = tf::createQuaternionFromYaw(yaw);
+  p.orientation.x = q.x();
+  p.orientation.y = q.y();
+  p.orientation.z = q.z();
+  p.orientation.w = q.w();
+
+  return p;
+}
+
 void FARUtil::ExtractFreeAndObsCloud(const PointCloudPtr& newCloudIn,
-                                    const PointCloudPtr& freeCloudOut,
-                                    const PointCloudPtr& obsCloudOut) 
+                                     const PointCloudPtr& freeCloudOut,
+                                     const PointCloudPtr& obsCloudOut)
 {
   // pre-process cloud
   freeCloudOut->clear(), obsCloudOut->clear();
@@ -217,11 +233,11 @@ void FARUtil::ExtractFreeAndObsCloud(const PointCloudPtr& newCloudIn,
       obsCloudOut->points[obs_idx] = p;
       obs_idx ++;
     }
-  } 
+  }
   freeCloudOut->resize(free_idx), obsCloudOut->resize(obs_idx);
 }
 
-void FARUtil::UpdateKdTrees(const PointCloudPtr& newObsCloudIn) 
+void FARUtil::UpdateKdTrees(const PointCloudPtr& newObsCloudIn)
 {
   if (!newObsCloudIn->empty()) {
     FARUtil::kdtree_new_cloud_->setInputCloud(newObsCloudIn);
@@ -246,7 +262,7 @@ bool FARUtil::IsPointNearNewPoints(const Point3D& p, const bool& is_creation) {
 
 std::size_t FARUtil::PointInXCounter(const Point3D& p,
                                      const float& radius,
-                                     const PointKdTreePtr& KdTree) 
+                                     const PointKdTreePtr& KdTree)
 {
   std::vector<int> pointSearchInd;
   std::vector<float> pointSearchSqDis;
@@ -263,9 +279,9 @@ std::size_t FARUtil::PointInNewCounter(const Point3D& p, const float& radius) {
   return FARUtil::PointInXCounter(p, radius, FARUtil::kdtree_new_cloud_);
 }
 
-void FARUtil::Flat3DPointCloud(const PointCloudPtr& cloudIn, 
-                              const PointCloudPtr& cloudFlat,
-                              const bool& is_downsample) 
+void FARUtil::Flat3DPointCloud(const PointCloudPtr& cloudIn,
+                               const PointCloudPtr& cloudFlat,
+                               const bool& is_downsample)
 {
   cloudFlat->clear();
   pcl::copyPointCloud(*cloudIn, *cloudFlat);
@@ -314,11 +330,11 @@ float FARUtil::MarginAngleNoise(const float& dist, const float& max_shift_dist, 
 }
 
 bool FARUtil::IsOutReducedDirs(const Point3D& diff_p,
-                               const PointPair& surf_dirs) 
+                               const PointPair& surf_dirs)
 {
   const Point3D norm_dir = diff_p.normalize_flat();
-  const float margin_angle_noise = FARUtil::MarginAngleNoise(diff_p.norm_flat(), 
-                                                             FARUtil::kNearDist, 
+  const float margin_angle_noise = FARUtil::MarginAngleNoise(diff_p.norm_flat(),
+                                                             FARUtil::kNearDist,
                                                              FARUtil::kAngleNoise);
   Point3D temp_opposite_dir;
   // check first half range
@@ -353,8 +369,8 @@ bool FARUtil::IsInCoverageDirPairs(const Point3D& diff_p, const NavNodePtr& node
   if (node_ptr->free_direct == NodeFreeDirect::PILLAR) return false;
   const Point3D norm_dir = diff_p.normalize_flat();
   const PointPair surf_dirs = node_ptr->surf_dirs;
-  const float margin_angle_noise = FARUtil::MarginAngleNoise(diff_p.norm_flat(), 
-                                                             FARUtil::kNearDist, 
+  const float margin_angle_noise = FARUtil::MarginAngleNoise(diff_p.norm_flat(),
+                                                             FARUtil::kNearDist,
                                                              FARUtil::kAngleNoise * 2.0f);
   const float dot_value = FARUtil::NoiseCosValue(surf_dirs.first * surf_dirs.second, true, margin_angle_noise);
   if (node_ptr->free_direct == NodeFreeDirect::CONCAVE) {
@@ -370,10 +386,10 @@ bool FARUtil::IsInCoverageDirPairs(const Point3D& diff_p, const NavNodePtr& node
 }
 
 bool FARUtil::IsInContourDirPairs(const Point3D& diff_p,
-                                 const PointPair& surf_dirs) 
+                                  const PointPair& surf_dirs)
 {
-  const float margin_angle_noise = FARUtil::MarginAngleNoise(diff_p.norm_flat(), 
-                                                             FARUtil::kNearDist, 
+  const float margin_angle_noise = FARUtil::MarginAngleNoise(diff_p.norm_flat(),
+                                                             FARUtil::kNearDist,
                                                              FARUtil::kAngleNoise);
   const float margin_cos_value = cos(margin_angle_noise);
   // check first half range
@@ -409,10 +425,10 @@ Point3D FARUtil::SurfTopoDirect(const PointPair& dirs) {
   return FARUtil::SurfTopoDirect(dirs, UNUSE_iswall);
 }
 
-void FARUtil::InflateCloud(const PointCloudPtr& obsCloudInOut, 
+void FARUtil::InflateCloud(const PointCloudPtr& obsCloudInOut,
                            const float& resol,
                            const int& inflate_size,
-                           const bool& deep_z_inflate) 
+                           const bool& deep_z_inflate)
 {
   const std::size_t current_size = obsCloudInOut->size();
   const int z_size = deep_z_inflate ? inflate_size + 1 : inflate_size;
@@ -449,8 +465,8 @@ float FARUtil::NoiseCosValue(const float& dot_value, const bool& is_large, const
 }
 
 void FARUtil::ClusterFilterCloud(const PointCloudPtr& cloudInOut,
-                                const float& radius,
-                                const std::size_t c_thred) {
+                                 const float& radius,
+                                 const std::size_t c_thred) {
   PointCloudPtr temp_ptr(new pcl::PointCloud<PCLPoint>());
   if (cloudInOut->empty()) return;
   FARUtil::kdtree_filter_cloud_->setInputCloud(cloudInOut);
@@ -478,9 +494,9 @@ void FARUtil::TransferCloud(const Point3D& transPoint, const PointCloudPtr& clou
 }
 
 void FARUtil::ExtractOverlapCloud(const PointCloudPtr& cloudIn,
-                                 const PointCloudPtr& cloudRef,
-                                 const PointCloudPtr& cloudOverlapOut,
-                                 const float& margin_ratio)
+                                  const PointCloudPtr& cloudRef,
+                                  const PointCloudPtr& cloudOverlapOut,
+                                  const float& margin_ratio)
 {
   PointCloudPtr temp_cloud(new pcl::PointCloud<PCLPoint>());
   FARUtil::ResetCloudIntensity(cloudIn, true);
@@ -501,7 +517,7 @@ void FARUtil::ExtractOverlapCloud(const PointCloudPtr& cloudIn,
 
 void FARUtil::RemoveOverlapCloud(const PointCloudPtr& cloudInOut,
                                  const PointCloudPtr& cloudRef,
-                                 const bool& is_copy_cloud) 
+                                 const bool& is_copy_cloud)
 {
   if (cloudRef->empty() || cloudInOut->empty()) return;
   PointCloudPtr temp_cloud(new pcl::PointCloud<PCLPoint>());
@@ -527,8 +543,8 @@ void FARUtil::RemoveOverlapCloud(const PointCloudPtr& cloudInOut,
 }
 
 void FARUtil::StackCloudByTime(const PointCloudPtr& curInCloud,
-                              const PointCloudPtr& StackCloud,
-                              const float& duration) 
+                               const PointCloudPtr& StackCloud,
+                               const float& duration)
 {
   pcl::PointIndices::Ptr outliers(new pcl::PointIndices());
   outliers->indices.resize(StackCloud->size());
@@ -549,7 +565,7 @@ void FARUtil::StackCloudByTime(const PointCloudPtr& curInCloud,
 }
 
 void FARUtil::RemoveIndicesFromCloud(const pcl::PointIndices::Ptr& outliers,
-                                    const PointCloudPtr& cloudInOut) {
+                                     const PointCloudPtr& cloudInOut) {
   pcl::ExtractIndices<PCLPoint> extract;
   extract.setInputCloud(cloudInOut);
   extract.setIndices(outliers);
@@ -576,9 +592,9 @@ float FARUtil::PixelDistance(const cv::Point2f& pre_p, const cv::Point2f& cur_p)
   return std::hypotf(pre_p.x - cur_p.x, pre_p.y - cur_p.y);
 }
 
-float FARUtil::VerticalDistToLine2D(const Point3D& start_p, 
-                                  const Point3D& end_p, 
-                                  const Point3D& cur_p) 
+float FARUtil::VerticalDistToLine2D(const Point3D& start_p,
+                                    const Point3D& end_p,
+                                    const Point3D& cur_p)
 {
   const Point3D line_dir = end_p - start_p;
   const Point3D diff_p   = cur_p - start_p;
@@ -586,10 +602,10 @@ float FARUtil::VerticalDistToLine2D(const Point3D& start_p,
   return sin(acos(dot_value)) * diff_p.norm_flat();
 }
 
-Point3D FARUtil::ContourSurfDirs(const Point3D& end_p, 
-                                 const Point3D& start_p, 
+Point3D FARUtil::ContourSurfDirs(const Point3D& end_p,
+                                 const Point3D& start_p,
                                  const Point3D& center_p,
-                                 const float& radius) 
+                                 const float& radius)
 {
   const float D = (center_p - end_p).norm_flat();
   const float phi = std::acos((center_p - end_p).norm_flat_dot(start_p - end_p));
@@ -612,13 +628,13 @@ float FARUtil::CosinTheta(const Point3D& vertex, const Point3D& p1, const Point3
 
 void FARUtil::CorrectDirectOrder(const PointPair& ref_dir, PointPair& dirInOUt) {
   PointPair temp_dir = dirInOUt;
-  if (ref_dir.first * dirInOUt.first  + ref_dir.second * dirInOUt.second < 
-      ref_dir.first * dirInOUt.second + ref_dir.second * dirInOUt.first) 
+  if (ref_dir.first * dirInOUt.first  + ref_dir.second * dirInOUt.second <
+      ref_dir.first * dirInOUt.second + ref_dir.second * dirInOUt.first)
   {
-      dirInOUt.first = temp_dir.second;
-      dirInOUt.second = temp_dir.first;
+    dirInOUt.first = temp_dir.second;
+    dirInOUt.second = temp_dir.first;
   }
-} 
+}
 
 std::size_t FARUtil::CounterOfPillar(const std::deque<PointPair>& dirs_stack) {
   std::size_t counter = 0;
@@ -688,15 +704,15 @@ PointPair FARUtil::AverageDirs(const std::vector<PointPair>& dirs_stack) {
   for (const auto& dir_pair : dirs_stack) {
     if (dir_pair == pillar_dir) continue;
     mean_dir1 = mean_dir1 + dir_pair.first;
-    mean_dir2 = mean_dir2 + dir_pair.second; 
+    mean_dir2 = mean_dir2 + dir_pair.second;
   }
   mean_dir1 = mean_dir1.normalize();
   mean_dir2 = mean_dir2.normalize();
   return PointPair(mean_dir1, mean_dir2);
 }
 
-void FARUtil::ConvertCTNodeStackToPCL(const CTNodeStack& ctnode_stack, 
-                                     const PointCloudPtr& point_cloud_ptr)
+void FARUtil::ConvertCTNodeStackToPCL(const CTNodeStack& ctnode_stack,
+                                      const PointCloudPtr& point_cloud_ptr)
 {
   const std::size_t N = ctnode_stack.size();
   point_cloud_ptr->clear(), point_cloud_ptr->resize(N);
@@ -705,9 +721,9 @@ void FARUtil::ConvertCTNodeStackToPCL(const CTNodeStack& ctnode_stack,
   }
 }
 
-void FARUtil::CropBoxCloud(const PointCloudPtr& cloudInOut, 
-                          const Point3D& center_p, 
-                          const Point3D& crop_size) 
+void FARUtil::CropBoxCloud(const PointCloudPtr& cloudInOut,
+                           const Point3D& center_p,
+                           const Point3D& crop_size)
 {
   pcl::CropBox<PCLPoint> boxFilter;
   pcl::PointCloud<PCLPoint> cropBox_cloud;
@@ -729,33 +745,33 @@ bool FARUtil::IsInCylinder(const Point3D& from_p, const Point3D& end_p, const Po
   const float proj_scalar = vec * unit_axial;
   float temp_line_dist = is_2D ? (end_p - from_p).norm_flat() : (end_p - from_p).norm();
   if (proj_scalar < - radius || proj_scalar > temp_line_dist + radius) {
-      return false;
+    return false;
   }
   const Point3D vec_axial = unit_axial * proj_scalar;
   temp_line_dist = is_2D ? (vec - vec_axial).norm_flat() : (vec - vec_axial).norm();
   if (temp_line_dist > radius) {
-      return false;
+    return false;
   }
   return true;
 }
 
-void FARUtil::CreatePointsAroundCenter(const Point3D& center_p, 
-                                      const float& radius,
-                                      const float& resol,
-                                      PointStack& points_stack,
-                                      const bool& is_sort)
+void FARUtil::CreatePointsAroundCenter(const Point3D& center_p,
+                                       const float& radius,
+                                       const float& resol,
+                                       PointStack& points_stack,
+                                       const bool& is_sort)
 {
   const int H_SIZE = std::ceil(radius / resol);
   const std::size_t grid_size = (2*H_SIZE+1) * (2*H_SIZE+1);
   points_stack.clear(), points_stack.resize(grid_size);
   std::size_t idx = 0;
   for (int i=-H_SIZE; i<=H_SIZE; i++) {
-      for (int j=-H_SIZE; j<=H_SIZE; j++) {
-          Point3D p(center_p.x+resol*i, center_p.y+resol*j, center_p.z);
-          p.intensity = (p - center_p).norm();
-          points_stack[idx] = p;
-          idx ++;
-      }
+    for (int j=-H_SIZE; j<=H_SIZE; j++) {
+      Point3D p(center_p.x+resol*i, center_p.y+resol*j, center_p.z);
+      p.intensity = (p - center_p).norm();
+      points_stack[idx] = p;
+      idx ++;
+    }
   }
   points_stack.resize(idx);
   if (is_sort) {
@@ -768,7 +784,7 @@ bool FARUtil::IsVoteTrue(const std::deque<int>& votes, const bool& is_balance) {
   const float sum = std::accumulate(votes.begin(), votes.end(), 0);
   const float factor = is_balance ? 2.0f : 3.0f;
   if (sum > std::floor(N / factor)) {
-      return true;
+    return true;
   }
   return false;
 }
@@ -776,7 +792,7 @@ bool FARUtil::IsVoteTrue(const std::deque<int>& votes, const bool& is_balance) {
 int FARUtil::VoteRankInVotes(const int& c, const std::vector<int>& ordered_votes) {
   int idx = 0;
   while (idx < ordered_votes.size() && c < ordered_votes[idx]) {
-      idx ++;
+    idx ++;
   }
   return idx;
 }
@@ -784,11 +800,11 @@ int FARUtil::VoteRankInVotes(const int& c, const std::vector<int>& ordered_votes
 bool FARUtil::IsOutReachNode(const NavNodePtr& node_ptr) {
   // check whether or not this node is connect to a node beyond planning range
   for (const auto& cnode : node_ptr->connect_nodes) {
-      if (!cnode->is_near_nodes && !FARUtil::IsOutsideGoal(cnode) &&
-          !FARUtil::IsTypeInStack(cnode, node_ptr->contour_connects)) 
-      {
-          return true;
-      }
+    if (!cnode->is_near_nodes && !FARUtil::IsOutsideGoal(cnode) &&
+        !FARUtil::IsTypeInStack(cnode, node_ptr->contour_connects))
+    {
+      return true;
+    }
   }
   return false;
 }
@@ -796,14 +812,14 @@ bool FARUtil::IsOutReachNode(const NavNodePtr& node_ptr) {
 bool FARUtil::IsPointInLocalRange(const Point3D& p, const bool& is_large_h) {
   const float H = is_large_h ? FARUtil::kTolerZ + FARUtil::kHeightVoxel : FARUtil::kTolerZ;
   if (FARUtil::IsPointInToleratedHeight(p, H) && (p - FARUtil::odom_pos).norm() < FARUtil::kSensorRange) {
-      return true;
+    return true;
   }
   return false;
 }
 
 bool FARUtil::IsPointInMarginRange(const Point3D& p) {
   if (FARUtil::IsPointInToleratedHeight(p, FARUtil::kMarginHeight) && (p - FARUtil::odom_pos).norm() < FARUtil::kMarginDist) {
-      return true;
+    return true;
   }
   return false;
 }
@@ -832,24 +848,24 @@ float FARUtil::DistanceToLineSeg2D(const Point3D& p, const PointPair& line) {
 bool FARUtil::ClockwiseLess(const Point3D& a, const Point3D& b) {
   /* Source: https://stackoverflow.com/questions/6989100/sort-points-in-clockwise-order */
   if (a.x >= 0.0f && b.x < 0.0f)
-        return true;
-    if (a.x < 0.0f && b.x >= 0.0f)
-        return false;
-    if (a.x == 0.0f && b.x == 0.0f) {
-        if (a.y >= 0.0f || b.y >= 0.0f) return a.y > b.y;
-        return b.y > a.y;
-    }
-    // compute the cross product of vectors (center -> a) x (center -> b)
-    float det = (a.x ) * (b.y) - (b.x ) * (a.y);
-    if (det < 0.0f)
-        return true;
-    if (det > 0.0f)
-        return false;
-    // points a and b are on the same line from the center
-    // check which point is closer to the center
-    float d1 = (a.x) * (a.x) + (a.y) * (a.y);
-    float d2 = (b.x) * (b.x) + (b.y) * (b.y);
-    return d1 > d2;
+    return true;
+  if (a.x < 0.0f && b.x >= 0.0f)
+    return false;
+  if (a.x == 0.0f && b.x == 0.0f) {
+    if (a.y >= 0.0f || b.y >= 0.0f) return a.y > b.y;
+    return b.y > a.y;
+  }
+  // compute the cross product of vectors (center -> a) x (center -> b)
+  float det = (a.x ) * (b.y) - (b.x ) * (a.y);
+  if (det < 0.0f)
+    return true;
+  if (det > 0.0f)
+    return false;
+  // points a and b are on the same line from the center
+  // check which point is closer to the center
+  float d1 = (a.x) * (a.x) + (a.y) * (a.y);
+  float d2 = (b.x) * (b.x) + (b.y) * (b.y);
+  return d1 > d2;
 }
 
 void FARUtil::ClockwiseTwoPoints(const Point3D& center, PointPair& edge) {
@@ -877,19 +893,19 @@ struct {
   bool operator() (const PointPair& edge1, const PointPair& edge2) const {
     const Point3D center1 = (edge1.first + edge1.second) / 2.0f;
     const Point3D center2 = (edge2.first + edge2.second) / 2.0f;
-    return FARUtil::ClockwiseLess(center1, center2); 
+    return FARUtil::ClockwiseLess(center1, center2);
   }
 } EdgeClockwiseLess;
 
 void FARUtil::SortEdgesClockWise(const Point3D& center, std::vector<PointPair>& edges) {
   for (auto& edge : edges) {
     edge.first  = edge.first - center;
-    edge.second = edge.second - center; 
+    edge.second = edge.second - center;
   }
   std::sort(edges.begin(), edges.end(), EdgeClockwiseLess);
   for (auto& edge : edges) {
     edge.first  = edge.first + center;
-    edge.second = edge.second + center; 
+    edge.second = edge.second + center;
   }
   for (auto& edge : edges) {
     FARUtil::ClockwiseTwoPoints(center, edge);
